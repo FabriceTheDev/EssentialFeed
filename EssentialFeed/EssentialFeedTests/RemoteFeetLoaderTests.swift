@@ -25,6 +25,16 @@ final class RemoteFeetLoaderTests: XCTestCase {
         XCTAssertEqual(client.requestedURL, url)
     }
     
+    func test_loadTwice_requestDataFromURLTwice() {
+        let url = URL(string: "www.google.com")!
+        let (sut, client) = self.makeSUT(url: url)
+        
+        sut.load()
+        sut.load()
+        
+        XCTAssertEqual(client.requestedURLs, [url, url])
+    }
+    
     // Helpers
     
     private func makeSUT(
@@ -37,9 +47,11 @@ final class RemoteFeetLoaderTests: XCTestCase {
 
     private class HTTPClientSpy: HTTPClient {
         var requestedURL: URL?
+        var requestedURLs = [URL]()
         
         func get(from url: URL) {
             self.requestedURL = url
+            self.requestedURLs.append(url)
         }
     }
 }
