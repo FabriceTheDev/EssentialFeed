@@ -20,7 +20,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
         let url = URL(string: "www.google.com")!
         let (sut, client) = self.makeSUT(url: url)
         
-        sut.load()
+        sut.load { _ in }
         
         XCTAssertEqual(client.requestedURLs, [url])
     }
@@ -29,8 +29,8 @@ final class RemoteFeetLoaderTests: XCTestCase {
         let url = URL(string: "www.google.com")!
         let (sut, client) = self.makeSUT(url: url)
         
-        sut.load()
-        sut.load()
+        sut.load { _ in }
+        sut.load { _ in }
         
         XCTAssertEqual(client.requestedURLs, [url, url])
     }
