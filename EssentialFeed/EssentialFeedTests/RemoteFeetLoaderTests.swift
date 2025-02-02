@@ -16,7 +16,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
         XCTAssertNil(client.requestedURL)
     }
     
-    func test_init_doesRequestDataFromURL() {
+    func test_load_requestDataFromURL() {
         let url = URL(string: "www.google.com")!
         let (sut, client) = self.makeSUT(url: url)
         
