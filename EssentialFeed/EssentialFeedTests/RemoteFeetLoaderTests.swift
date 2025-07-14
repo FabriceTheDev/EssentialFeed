@@ -38,7 +38,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
     func test_load_deliversErrorOnClientError() {
         let (sut, client) = self.makeSUT()
         
-        self.expect(sut, toCompleteWithError: .connectivity) {
+        self.expect(sut, toCompleteWith: .failure(.connectivity)) {
             let clientError = NSError(domain: "Test", code: 0)
             client.complete(with: clientError)
         }
@@ -49,7 +49,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
 
         let samples = [199, 201, 300, 400, 500]
         samples.enumerated().forEach { index, code in
-            self.expect(sut, toCompleteWithError: .invalidData) {
+            self.expect(sut, toCompleteWith: .failure(.invalidData)) {
                 client.complete(withStatusCode: code, at: index)
             }
         }
@@ -58,9 +58,18 @@ final class RemoteFeetLoaderTests: XCTestCase {
     func test_load_deliversErrorOn200HTTPResponseWithInvalidJSON() {
         let (sut, client) = self.makeSUT()
         
-        self.expect(sut, toCompleteWithError: .invalidData) {
+        self.expect(sut, toCompleteWith: .failure(.invalidData)) {
             let invalidJSON = Data("invalid json".utf8)
             client.complete(withStatusCode: 200, data: invalidJSON)
+        }
+    }
+    
+    func test_load_deliversNoItemsOn200HTTPResponseWithEmptyJSONList() {
+        let (sut, client) = self.makeSUT()
+        
+        self.expect(sut, toCompleteWith: .success([])) {
+            let emptyJSONList = Data(bytes: "{\"items\": []}".utf8)
+            client.complete(withStatusCode: 200, data: emptyJSONList)
         }
     }
     
@@ -76,7 +85,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
     
     private func expect(
         _ sut: RemoteFeedLoader,
-        toCompleteWithError error: RemoteFeedLoader.Error,
+        toCompleteWith result: RemoteFeedLoader.Result,
         when action: () -> Void,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -86,7 +95,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
         
         action()
         
-        XCTAssertEqual(capturedResult, [.failure(error)], file: file, line: line)
+        XCTAssertEqual(capturedResult, [result], file: file, line: line)
     }
 
     private class HTTPClientSpy: HTTPClient {
