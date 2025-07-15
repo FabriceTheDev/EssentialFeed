@@ -7,11 +7,6 @@
 
 import Foundation
 
-public enum HTTPClientResult {
-    case success(Data, HTTPURLResponse)
-    case failure(Error)
-}
-
 public final class RemoteFeedLoader {
     private let URL: URL
     private let client: HTTPClient
@@ -40,49 +35,22 @@ public final class RemoteFeedLoader {
             case let .success(data, response):
                 do {
                     let items = try FeedItemsMapper.map(data, response)
-                    completion(.success(items))
+                    return completion(.success(items))
                 } catch {
-                    completion(.failure(.invalidData))
+                    return completion(.failure(.invalidData))
                 }
             case .failure:
                 completion(.failure(.connectivity))
             }
         })
     }
-}
-
-private class FeedItemsMapper {
-
-    private struct Root: Decodable {
-        let items: [Item]
-    }
-
-    private struct Item: Decodable {
-        let id: UUID
-        let description: String?
-        let location: String?
-        let image: URL
-        
-        var item: FeedItem {
-            return FeedItem(
-                id: self.id,
-                description: self.description,
-                location: self.location,
-                imageURL: self.image
-            )
+    
+    private func map(_ data: Data, from response: HTTPURLResponse) -> Result {
+        do {
+            let items = try FeedItemsMapper.map(data, response)
+            return .success(items)
+        } catch {
+            return .failure(.invalidData)
         }
     }
-    
-    static var OK_200: Int { return 200 }
-    
-    static func map(_ data: Data, _ response: HTTPURLResponse) throws -> [FeedItem] {
-        guard response.statusCode == self.OK_200 else { throw RemoteFeedLoader.Error.invalidData
-        }
-        let root = try JSONDecoder().decode(Root.self, from: data)
-        return root.items.map{ $0.item }
-    }
-}
-
-public protocol HTTPClient {
-    func get(from url: URL, completion: @escaping (HTTPClientResult) -> Void)
 }
