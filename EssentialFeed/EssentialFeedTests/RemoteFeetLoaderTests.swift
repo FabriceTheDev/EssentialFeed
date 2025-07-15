@@ -69,7 +69,7 @@ final class RemoteFeetLoaderTests: XCTestCase {
         let (sut, client) = self.makeSUT()
         
         self.expect(sut, toCompleteWith: .success([])) {
-            let emptyJSONList = Data(bytes: "{\"items\": []}".utf8)
+            let emptyJSONList = self.makeItemJSON([])
             client.complete(withStatusCode: 200, data: emptyJSONList)
         }
     }
