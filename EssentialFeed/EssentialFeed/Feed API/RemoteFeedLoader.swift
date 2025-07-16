@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class RemoteFeedLoader {
+public final class RemoteFeedLoader: FeedLoader {
     private let URL: URL
     private let client: HTTPClient
     
@@ -16,10 +16,7 @@ public final class RemoteFeedLoader {
         case invalidData
     }
     
-    public enum Result: Equatable {
-        case success([FeedItem])
-        case failure(Error)
-    }
+    public typealias Result = LoadFeedResult<Error>
     
     public init(
         url: URL,
@@ -32,6 +29,7 @@ public final class RemoteFeedLoader {
     public func load(completion: @escaping (Result) -> Void) {
         self.client.get(from: self.URL, completion: { [weak self] result in
             guard self != nil else { return }
+
             switch result {
             case let .success(data, response):
                 completion(FeedItemsMapper.map(data, from: response))
