@@ -147,7 +147,7 @@ final class RemoteFeedLoaderTests: XCTestCase {
         let itemsJSON = [
             "items": items
         ]
-        return try!  JSONSerialization.data(withJSONObject: itemsJSON)
+        return try! JSONSerialization.data(withJSONObject: itemsJSON)
     }
     
     private func expect(
